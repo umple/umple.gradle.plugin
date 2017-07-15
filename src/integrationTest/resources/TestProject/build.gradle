@@ -3,11 +3,14 @@ buildscript {
     maven {
       url uri('libs')
     }
+    mavenCentral()
   }
   dependencies {
     classpath files('libs/umple-latest.jar')
     // Use the locally built version of the plugin for the tests
     classpath files('libs/UmpleGradlePlugin-0.1.3.jar')
+    classpath group: 'com.google.guava', name: 'guava', version: '21.0'
+
   }
 }
 
@@ -15,20 +18,21 @@ buildscript {
 apply plugin: 'java'
  
 // Add required plugins and source sets to the sub projects
-subprojects{
+subprojects {
   apply plugin: "umple.gradle.plugin"
   apply plugin: "java"
   
   // Attach the plugin properties to the generatedSource source set
   sourceSets {
-    generatedSource { 
-       ext.languageToGenerate = 'Java' 
-       ext.outputPath = 'customPath/generated/java'
-       ext.umpleFilePath = 'src/customPath/umple/master.ump'
+    main {
+      umple {
+        language = 'Java'
+        master = file('src/customPath/umple/master.ump')
+        System.err.println("wat")
+        outputDir = file('customPath/generated/\${language}')
+      }
     }
   }
-
-  compileGeneratedSourceJava.dependsOn('generateSource')
 }
 
-compileJava.dependsOn(':subproj:compileGeneratedSourceJava', ':sub2:compileGeneratedSourceJava')
+compileJava.dependsOn(':subproj:compileJava', ':sub2:compileJava')
