@@ -15,6 +15,7 @@ import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 import java.nio.file.Path
+import java.nio.file.Paths
 
 import javax.inject.Inject
 
@@ -47,7 +48,6 @@ class UmpleGradlePlugin implements Plugin<Project> {
         // So now we have to go through and add the properties that we want
         project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().all { sourceSet ->
             // For each sourceSet we're enacting an action on each one that adds an umple task to it
-
             // Get the convention and add the properties
             Convention sourceSetConvention = (Convention) InvokerHelper.getProperty(sourceSet, "convention")
 
@@ -91,8 +91,7 @@ class UmpleGradlePlugin implements Plugin<Project> {
 
             // make a defensive copy so we don't change the underlying stored reference
             DefaultUmpleOptions out = new DefaultUmpleOptions()
-            
-            
+
             processConfiguration(out, umpleSourceSet, project, sourceSet, umpleGenerate)
            
             umpleGenerate.setCompileConfig(out)
@@ -164,12 +163,13 @@ class UmpleGradlePlugin implements Plugin<Project> {
         
         if (out.language.contains(UmpleLanguage.JAVA) && out.compileGenerated) 
         {      
-            project.tasks.getByName(sourceSet.compileJavaTaskName).dependsOn umpleGenerate
+            // The user has requested that generated Java files are compiled. Make sure
+            // the compileJava task runs after the compileUmple task
+            umpleGenerate.finalizedBy project.tasks.getByName(sourceSet.compileJavaTaskName)
             // overwrite the existing Java srcDirs. We want Gradle to only look at the folder that contains the output of the compileUmple task            
             sourceSet.java.srcDirs = [out.outputDir.toString()]        
         }
     }
-
 
     //TODO add tests for this
     // We process paths differently depending on whether the user is following the {project dir}/src/{source set}/umple convention
@@ -177,9 +177,9 @@ class UmpleGradlePlugin implements Plugin<Project> {
     private static void configureMasterPaths(DefaultUmpleOptions out, 
                                              final DefaultUmpleSourceSet umpleSourceSet, 
                                              final Project project,
-                                             final SourceSet sourceSet) {        
+                                             final SourceSet sourceSet) {       
         if (out.customMasterPath) {
-            // The user has specified they want to override the convention. Master paths are relative to root project dir, 
+            // The user has specified they want to override the convention. Master paths are relative to root project dir
             for (File master : out.master) 
             {
                 umpleSourceSet.umple.srcDir master.getParent()
@@ -191,11 +191,10 @@ class UmpleGradlePlugin implements Plugin<Project> {
             ArrayList<File> resolvedMasters = new ArrayList();
             for (File master : out.master) 
             {
-                // Get the relative path specified by the user
-                final projRel = projectPath.relativize(master.toPath())
+                // Get the relative path specified by the user (if any)
+                final relProjPath = projectPath.relativize(Paths.get(master.getAbsolutePath()))
                 // Append the relative path to the the fully qualified convention path
-                resolvedMasters.add(conventionalMasterPath.resolve(projRel).toFile())
-
+                resolvedMasters.add(conventionalMasterPath.resolve(relProjPath).toFile())
                 umpleSourceSet.umple.srcDir master.getParent()
             }
             out.master = resolvedMasters

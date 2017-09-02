@@ -8,9 +8,8 @@ buildscript {
   dependencies {
     classpath files('libs/umple-latest.jar')
     // Use the locally built version of the plugin for the tests
-    classpath files('libs/UmpleGradlePlugin-0.1.3.jar')
+    classpath files('libs/umple.gradle-0.2.0.jar')
     classpath group: 'com.google.guava', name: 'guava', version: '21.0'
-
   }
 }
 
@@ -26,13 +25,11 @@ subprojects {
   sourceSets {
     main {
       umple {
-        language = 'Java'
+        language = 'java'
         master = file('src/customPath/umple/master.ump')
-        System.err.println("wat")
-        outputDir = file('customPath/generated/\${language}')
+        outputDir = file('customPath/generated/java')
+		    customMasterPath = true
       }
     }
   }
 }
-
-compileJava.dependsOn(':subproj:compileJava', ':sub2:compileJava')

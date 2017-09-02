@@ -16,15 +16,15 @@ public class CompilationAndGeneration {
     // Key = path to directory we want to check, value = the files we expect to find in the directory   
     static {
         ImmutableMultimap.Builder<String, ArrayList<String>> builder = ImmutableMultimap.builder();
-        builder.put(DIRECTORIES_ROOT + "subproj/build/classes/generatedSource", ["Subproj.class", "Subproj2.class"])
-        builder.put(DIRECTORIES_ROOT + "sub2/build/classes/generatedSource", ["Sub2.class", "Sub22.class"])
+        builder.put(DIRECTORIES_ROOT + "subproj/build/classes/main", ["Subproj.class", "Subproj2.class"])
+        builder.put(DIRECTORIES_ROOT + "sub2/build/classes/main", ["Sub2.class", "Sub22.class"])
         builder.put(DIRECTORIES_ROOT + "subproj/customPath/generated/java", ["Subproj.java", "Subproj2.java"])
         builder.put(DIRECTORIES_ROOT + "sub2/customPath/generated/java", ["Sub2.java", "Sub22.java"])
         DIRECTORIES_TO_CHECK = builder.build();
     }
 
     private static final PATH_TO_TEST_PROJECT = "src/integrationTest/resources/TestProject"
-    private static final TEST_PROJECT_TASK = "compileJava"
+    private static final TEST_PROJECT_TASK = "compileUmple"
 
     @Before
     // Generates Java from master.ump and compiles the result
